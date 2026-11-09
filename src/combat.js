@@ -393,6 +393,11 @@ window.TFT = window.TFT || {};
           });
         }
       });
+      // Adalet Eli: rastgele buff
+      units.forEach(u => {
+        if (u.handOfJustice === 1) { u.adFlat += 25; u.ap += 25; }
+        else if (u.handOfJustice === 2) { u.lifesteal += 0.25; }
+      });
       // başlangıç kalkanları
       units.forEach(u => {
         if (u.startShield) u.shield = (u.shield || 0) + u.startShield;
@@ -436,7 +441,7 @@ window.TFT = window.TFT || {};
 
     /* ---------- EFEKTİF DEĞERLER ---------- */
     effAS(u) {
-      let as = (u.baseAs) * (1 + u.asPct + u.guinsoo * 0.05 * (u.atkCount || 0)) + u.asFlat;
+      let as = (u.baseAs) * (1 + u.asPct + (u.guinsooStacks || 0) * 0.05) + u.asFlat;
       if (u.tempAsT > 0) as *= (1 + u.tempAs);
       if (u.slowT > 0) as *= (1 - u.slowAmt);
       if (u.auraSlow) as *= (1 - u.auraSlow);
@@ -668,7 +673,7 @@ window.TFT = window.TFT || {};
       }
       this.events.push({
         type: 'damage', from: src, unit: tgt, amount: dmg, dmgType: type,
-        crit: !!opts.crit, ability: !!opts.ability, hp: toHp
+        crit: !!opts.crit, ability: !!opts.ability, dot: !!opts.dot, hp: toHp
       });
       // mana kazanımı
       if (tgt.maxMana > 0) tgt.mana = Math.min(tgt.maxMana, tgt.mana + Math.min(15, dmg * 0.02));

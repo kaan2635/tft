@@ -75,6 +75,9 @@ tests/              headless testler (motor, arayüz, otomatik oynatma)
 # Savaş motoru (saf node, bağımlılık yok)
 node tests/engine-test.js
 
+# Sinerji + eşya etkileri (saf node)
+node tests/effects-test.js
+
 # Arayüz + oyun akışı (jsdom gerekir)
 npm i jsdom && NODE_PATH=./node_modules node tests/dom-test.js
 
@@ -82,7 +85,7 @@ npm i jsdom && NODE_PATH=./node_modules node tests/dom-test.js
 NODE_PATH=./node_modules node tests/autoplay2.js 3
 ```
 
-Motor testi tüm 53 şampiyonu, 36 eşyayı, 22 sinerjiyi, PvE dalgalarını ve 100 rastgele savaşı kapsar.
+Motor testi tüm 53 şampiyonu, 36 eşyayı, 22 sinerjiyi, PvE dalgalarını ve 100 rastgele savaşı kapsar. Etki testi her sinerjinin ve her eşyanın gerçekten uygulandığını doğrular.
 
 ## Notlar
 
