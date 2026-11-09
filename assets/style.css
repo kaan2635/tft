@@ -398,7 +398,9 @@ button{font-family:inherit; color:inherit; cursor:pointer; border:none; backgrou
 .btn-cost{position:absolute; right:5px; font-size:9px; background:#0a1220; border-radius:3px; padding:0 3px; color:var(--gold-2)}
 .btn-ico{font-size:11px}
 .btn.small{flex:0 0 auto; padding:4px 12px; font-size:10px}
+#btn-arrange{flex:0 0 auto; padding:7px 14px; font-size:10.5px; letter-spacing:.6px}
 .btn.ready{
+  flex:0 0 auto;
   background:linear-gradient(180deg,#1c5c3a,#0f3a24); border-color:#2f8f5b; color:#c9ffe0;
   font-size:14px; padding:10px 26px; letter-spacing:1px; box-shadow:0 0 18px rgba(74,212,138,.2);
 }

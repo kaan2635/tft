@@ -56,21 +56,42 @@ window.TFT = window.TFT || {};
   }
 
   /* ================= LAYOUT ================= */
+  function applyHexSize(size) {
+    hexW = size;
+    hexH = size * 1.1547;
+    document.documentElement.style.setProperty('--hexW', hexW + 'px');
+    document.documentElement.style.setProperty('--hexH', hexH + 'px');
+    const board = $('#board');
+    if (board) {
+      board.style.width = (7 * hexW + hexW * 0.5) + 'px';
+      board.style.height = (8 * hexH * 0.76 + hexH * 0.24) + 'px';
+    }
+    buildHexes();
+  }
+
   function layout() {
     const center = $('#center');
     if (!center) return;
     const cw = center.clientWidth || 600;
     const chh = center.clientHeight || 600;
-    const byW = (cw - 20) / 7.6;
-    const byH = (chh - 118) / 7.35;
-    let size = Math.min(byW, byH, 82);
-    size = Math.max(30, size);
-    hexW = size; hexH = size * 1.1547;
-    document.documentElement.style.setProperty('--hexW', hexW + 'px');
-    document.documentElement.style.setProperty('--hexH', hexH + 'px');
-    $('#board').style.width = (7 * hexW + hexW * 0.5) + 'px';
-    $('#board').style.height = (8 * hexH * 0.76 + hexH * 0.24) + 'px';
-    buildHexes();
+    const byW = (cw - 26) / 7.6;
+    const byH = (chh - 96) / 7.35;
+    let size = Math.max(26, Math.min(byW, byH, 82));
+    applyHexSize(size);
+
+    // gerçek ölçümle sığdır (bench satır kaydırabilir)
+    const boardEl = $('#board');
+    const benchWrap = $('#bench-wrap');
+    if (boardEl && benchWrap && center.clientHeight > 50) {
+      const avail = center.clientHeight - 8;
+      const bh = boardEl.offsetHeight || 0;
+      const hh = benchWrap.offsetHeight || 0;
+      if (bh + hh > avail && bh > 0) {
+        const k = Math.max(0.45, (avail - hh) / bh);
+        size = Math.max(24, Math.min(size * k, size));
+        applyHexSize(size);
+      }
+    }
     if (S && S.phase !== 'combat') renderBoardUnits();
     if (S && S.phase === 'combat') positionCombatTokens(true);
   }
@@ -1141,6 +1162,8 @@ window.TFT = window.TFT || {};
     bindClicks();
     bindButtons();
     window.addEventListener('resize', () => { layout(); });
+    window.addEventListener('load', () => { layout(); });
+    setTimeout(layout, 250);
     document.addEventListener('dragstart', e => e.preventDefault());
     if (document.body.classList.contains('dragging-unit')) { }
     // dragging sınıfını sell-zone için izle
