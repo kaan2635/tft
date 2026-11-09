@@ -997,7 +997,7 @@ window.TFT = window.TFT || {};
           const A = S.items[d.itemSlot], B = S.items[to];
           if (A && B) {
             if (A.comp && B.comp) G.combineItems(d.itemSlot, to);
-            else { G.toast('Sadece iki bileşen birleşir', 'bad'); }
+            else { toast('Sadece iki bileşen birleşir', 'bad'); }
           } else if (A) G.moveItemToSlot(d.itemSlot, to);
         }
         return;
