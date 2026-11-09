@@ -83,6 +83,9 @@ npm i jsdom && NODE_PATH=./node_modules node tests/dom-test.js
 
 # Otomatik oynatma / denge
 NODE_PATH=./node_modules node tests/autoplay2.js 3
+
+# Zafer / eleme / yeniden başlatma akışı
+NODE_PATH=./node_modules node tests/victory-test.js
 ```
 
 Motor testi tüm 53 şampiyonu, 36 eşyayı, 22 sinerjiyi, PvE dalgalarını ve 100 rastgele savaşı kapsar. Etki testi her sinerjinin ve her eşyanın gerçekten uygulandığını doğrular.

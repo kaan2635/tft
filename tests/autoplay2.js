@@ -21,6 +21,8 @@ function playGame(n) {
     const ready = () => new Promise(res => { if (d.readyState === 'complete') return res(); w.addEventListener('load', () => res()); setTimeout(res, 1500); });
     ready().then(() => {
       step(); step();
+      const wb = d.getElementById('btn-welcome'); if (wb) wb.click();
+      step();
       const G = w.TFT.Game, S = G.S, D = w.TFT.DATA, CH = D.CHAMP_BY_ID;
       const Bots = w.TFT.Bots;
       const log = [];
@@ -35,7 +37,8 @@ function playGame(n) {
         for (let i = 0; i < 5; i++) {
           if (!S.shop[i]) continue;
           const ch = CH[S.shop[i]];
-          if (S.stage > 2 && !fits(ch) && !S.bench.every(b => b)) continue;
+          const own = G.allUnits().filter(u => u.champId === ch.id).length;
+          if (S.stage > 2 && !fits(ch) && own < 2) continue;
           if (S.gold >= ch.cost && (S.bench.some(b => !b) || G.allUnits().filter(u => u.champId === ch.id && u.star === 1).length >= 2)) G.buyUnit(i);
         }
       };
@@ -60,7 +63,7 @@ function playGame(n) {
       };
       const economy = () => {
         if (S.level < 8 && S.gold >= (S.stage <= 2 ? 12 : 24)) G.buyXp();
-        if (S.gold > 32) { G.rollShop(false); buy(); }
+        if (S.gold > 22 && S.bench.some(b => !b) && S.stage >= 3) { G.rollShop(false); buy(); }
       };
 
       while (guard++ < 8000) {

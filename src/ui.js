@@ -577,6 +577,25 @@ window.TFT = window.TFT || {};
     sfx(win ? 'win' : 'lose');
   }
 
+  function showWelcome(onStart) {
+    openModal(`
+      <h2 style="text-align:center;font-size:24px">⚔️ TFT ARENA</h2>
+      <p class="sub" style="text-align:center">7 bot oyuncuya karşı offline otomatik savaş. Sona kalan kazanır.</p>
+      <div class="help-grid" style="margin-bottom:6px">
+        <div><h4>1 · Şampiyon al</h4>Alttaki mağazadan şampiyon satın al. Aynı şampiyondan 3 tane alırsan <b>2★</b>, 3 tane 2★ ise <b>3★</b> olur.</div>
+        <div><h4>2 · Tahtaya diz</h4>Birimleri yedek alanından <b>hex tahtaya sürükle</b>. Seviye = tahtaya koyabileceğin birim sayısı.</div>
+        <div><h4>3 · Sinerji kur</h4>Sol paneldeki sinerjiler eşik sayısına ulaşınca takımına güç verir. Farklı şampiyonlar sayılır.</div>
+        <div><h4>4 · Eşya tak</h4>İki bileşen eşyayı birleştir, birime sürükle. Birim başına en fazla <b>3 eşya</b>.</div>
+      </div>
+      <p class="sub" style="text-align:center;margin-top:6px">
+        <span class="help-key">D</span> yenile · <span class="help-key">F</span> XP · <span class="help-key">R</span> hazır · <span class="help-key">E</span> sat
+      </p>
+      <div class="modal-actions" style="justify-content:center"><button class="btn ready" id="btn-welcome">OYUNA BAŞLA</button></div>
+    `);
+    const b = $('#btn-welcome');
+    if (b) b.addEventListener('click', () => { hideModal(); if (onStart) onStart(); });
+  }
+
   function showHelp() {
     openModal(`
       <h2>❔ Nasıl Oynanır</h2>
@@ -1178,7 +1197,7 @@ window.TFT = window.TFT || {};
     init, renderAll, renderBoardUnits, renderBench, renderShop, renderItems,
     renderTraits, renderTraitsMini: renderTraits, renderInfo, renderPlayers,
     renderBars, renderTimer, renderTopbar, renderLog,
-    setCombatMode, showResult, showCarousel, showScout, showNextOpponent, hideNextOpponent, showAugments, showGameOver, showHelp,
+    setCombatMode, showResult, showCarousel, showScout, showWelcome, showNextOpponent, hideNextOpponent, showAugments, showGameOver, showHelp,
     toast, sfx, hideModal, layout, showTraitDetail,
     showUnitTooltip, showChampTooltip, showItemTooltip, showTraitTooltip, showTooltip, hideTooltip,
     skipCombat, updateCombat, positionCombatTokens

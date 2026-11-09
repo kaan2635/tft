@@ -32,6 +32,8 @@ function playGame(gameNo) {
 
     ready().then(() => {
       steps(2);
+      const wb = d.getElementById('btn-welcome'); if (wb) wb.click();
+      step();
       const G = w.TFT.Game, S = G.S, D = w.TFT.DATA;
       const log = [];
       let guard = 0, lastKey = '';

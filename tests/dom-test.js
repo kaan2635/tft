@@ -52,6 +52,11 @@ function boot() {
   if (!G) { console.log(window.__errors); process.exit(1); }
   const S = G.S;
 
+  // ilk açılış karşılama ekranı
+  const welcome = document.getElementById('btn-welcome');
+  if (welcome) { welcome.click(); steps(2); }
+  assert(S.phase === 'carousel' || S.phase === 'planning', 'karşılama ekranı geçildi');
+
   console.log('\n— Başlangıç —');
   assert(S.phase === 'carousel', 'ilk tur carousel (phase=' + S.phase + ')');
   assert(document.querySelectorAll('.carousel-card').length === 8, 'carousel 8 seçenek');

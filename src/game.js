@@ -663,12 +663,12 @@ window.TFT = window.TFT || {};
       let loser = null;
       if (r === 'a') loser = b; else if (r === 'b') loser = a;
       if (!loser) { // beraberlik
-        a.hp = Math.max(0, a.hp - 2); b.hp = Math.max(0, b.hp - 2);
+        a.hp = Math.max(0, a.hp - 3); b.hp = Math.max(0, b.hp - 3);
         if (a.hp <= 0 && a.alive) eliminateBot(a);
         if (b.hp <= 0 && b.alive) eliminateBot(b);
         continue;
       }
-      const dmg = damageFor(S.stage, Array.from({ length: 2 + Math.floor(rnd() * 4) }, () => ({ star: 1 + Math.floor(rnd() * 2), cost: 2 })));
+      const dmg = damageFor(S.stage, Array.from({ length: 4 + Math.floor(rnd() * 4) }, () => ({ star: 1 + Math.floor(rnd() * 2), cost: 3 })));
       loser.hp = Math.max(0, loser.hp - dmg);
       if (loser.hp <= 0 && loser.alive) eliminateBot(loser);
     }
@@ -749,8 +749,16 @@ window.TFT = window.TFT || {};
     TFT.UI.init();
     TFT.UI.renderAll();
     pushLog('TFT Arena — Offline. İyi şanslar!');
-    beginRound();
-    if (S.phase === 'augment' || S.phase === 'carousel') { /* modal açık */ }
+    let seen = false;
+    try { seen = !!window.localStorage.getItem('tft_seen_welcome_v1'); } catch (e) { }
+    if (!seen) {
+      TFT.UI.showWelcome(() => {
+        try { window.localStorage.setItem('tft_seen_welcome_v1', '1'); } catch (e) { }
+        beginRound();
+      });
+    } else {
+      beginRound();
+    }
   }
   function restart() {
     reset();
