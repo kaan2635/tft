@@ -223,7 +223,11 @@ window.TFT = window.TFT || {};
       rb.classList.toggle('disabled', S.gold < cost);
     }
     const xb = $('#btn-xp');
-    if (xb) xb.classList.toggle('disabled', S.gold < DATA.XP_COST || S.level >= DATA.MAX_LEVEL);
+    if (xb) {
+      xb.classList.toggle('disabled', S.gold < DATA.XP_COST || S.level >= DATA.MAX_LEVEL);
+      const odds = DATA.SHOP_ODDS[Math.min(9, S.level + (S.buffs.shopOdds || 0))] || [];
+      xb.title = `Seviye ${S.level} mağaza oranları: ` + odds.map((o, i) => `${i + 1}🪙 %${o}`).join(' · ');
+    }
   }
 
   /* ================= TRAITS ================= */
@@ -255,7 +259,7 @@ window.TFT = window.TFT || {};
 
     if (mini) {
       mini.innerHTML = rows.filter(r => r.tier).map(r =>
-        `<div class="tm-chip on"><span>${r.def.icon}</span><span class="tm-n">${r.count}</span></div>`
+        `<div class="tm-chip on" data-trait="${r.id}" title="${r.def.name} ${r.count}"><span>${r.def.icon}</span><span class="tm-n">${r.count}</span></div>`
       ).join('') || `<div style="color:#3f5474;font-size:9px">Aktif sinerji yok</div>`;
     }
   }
@@ -326,8 +330,11 @@ window.TFT = window.TFT || {};
     }
     const pills = $('#board-pills');
     if (pills) {
+      const cap = 5 + (S.buffs.interestCap || 0);
+      const interest = Math.min(cap, Math.floor(S.gold / 10));
       pills.innerHTML = `<div class="board-pill">TAKIM <b>${G.boardCount()}/${G.teamSize()}</b></div>
         <div class="board-pill">SEVİYE <b>${S.level}</b></div>
+        <div class="board-pill" title="Her 10 altın için 1 faiz (üst sınır ${cap})">FAİZ <b>+${interest}</b></div>
         <div class="board-pill">AUGMENT <b>${S.augments.length}</b></div>
         <div class="board-pill">TUR <b>${S.stage}-${S.round}</b></div>`;
     }

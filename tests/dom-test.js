@@ -153,10 +153,40 @@ function boot() {
   assert(rounds >= 5, rounds + ' tur ilerledi (stage ' + S.stage + '-' + S.round + ')');
   assert(S.hp > 0 || S.phase === 'gameover', 'oyuncu canı tutarlı (' + S.hp + ')');
 
+  console.log('\n— Boş tahta soft-lock testi —');
+  {
+    // planlama fazına kadar ilerle
+    let g2 = 0;
+    while (S.phase !== 'planning' && g2++ < 3000) { if (S.phase === 'augment') G.pickAugment(S.augmentOptions[0].id); else if (S.phase === 'carousel') G.pickCarousel(0); else step(50); }
+    if (S.phase === 'planning') {
+      S.board.slice().forEach(u => {
+        const bi = S.bench.findIndex(b => !b);
+        if (bi >= 0) G.benchUnit(u.uid, bi); else G.sellUnit(u.uid);
+      });
+      assert(G.boardCount() === 0, ' tahta boşaltıldı');
+      S.timer = 0.05;
+      for (let i = 0; i < 40 && S.phase === 'planning'; i++) step(50);
+      assert(S.phase === 'combat' || S.phase === 'result' || S.phase === 'gameover', 'boş tahtada tur otomatik ilerledi (' + S.phase + ')');
+    }
+  }
+
   console.log('\n— Rendering kontrolü —');
   assert(document.querySelectorAll('.player-chip').length === 8, '8 oyuncu göstergesi');
   assert(document.querySelector('#player-gold').textContent === String(S.gold), 'altın göstergesi doğru');
   assert(document.querySelectorAll('.trait-row').length >= 0, 'sinerji paneli çizildi');
+
+  console.log('\n— Oyun sonu / yeniden başlatma —');
+  if (S.phase !== 'gameover') {
+    S.place = 1;
+    S.bots.forEach(b => { b.alive = false; b.hp = 0; });
+    window.TFT.UI.showGameOver(true);
+    assert(!document.getElementById('modal-root').classList.contains('hidden'), 'oyun sonu modalı açıldı');
+    assert(!!document.getElementById('btn-restart'), 'yeniden başlatma butonu var');
+    document.getElementById('btn-restart').click();
+    assert(S.stage === 1 && S.round === 1, 'yeni oyun 1-1 ile başladı');
+    assert(S.hp === 100 && S.level === 2, 'durum sıfırlandı');
+    assert(G.allUnits().length === 0, 'birimler temizlendi');
+  }
 
   console.log('\n— Hata günlüğü —');
   if (window.__errors.length) {

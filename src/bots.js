@@ -78,9 +78,9 @@ window.TFT = window.TFT || {};
     }
 
     // yıldızlar
-    const p2 = clamp(0.06 + stage * 0.13 + round * 0.015, 0, 0.9);
+    const p2 = clamp(0.03 + stage * 0.11 + round * 0.012, 0, 0.9);
     const p3 = stage >= 5 ? clamp((stage - 4) * 0.10, 0, 0.3) : 0;
-    const itemsMax = clamp(Math.floor(stage / 1.7), 0, 3);
+    const itemsMax = clamp(Math.floor(stage / 1.9), 0, 3);
 
     const units = picked.map(c => {
       let star = 1;

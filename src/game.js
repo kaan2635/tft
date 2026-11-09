@@ -42,6 +42,7 @@ window.TFT = window.TFT || {};
       lastOpponent: null
     });
     UID = 1;
+    Object.keys(shownTips).forEach(k => delete shownTips[k]);
     DATA.CHAMPS.forEach(c => { S.pool[c.id] = DATA.POOL_COUNT[c.cost]; });
     S.bots = [];
     for (let i = 0; i < 7; i++) S.bots.push(Bots.makeBot(i));
@@ -153,6 +154,13 @@ window.TFT = window.TFT || {};
     if (u.star === 1) return c;
     if (u.star === 2) return c * 3 - 1;
     return c * 9 - 2;
+  }
+
+  const shownTips = {};
+  function tip(key, msg) {
+    if (shownTips[key]) return;
+    shownTips[key] = true;
+    setTimeout(() => TFT.UI && TFT.UI.toast('💡 ' + msg), 400);
   }
 
   function pushLog(msg) {
@@ -269,6 +277,7 @@ window.TFT = window.TFT || {};
       mergeAll(id);
     }
     TFT.UI && TFT.UI.sfx('buy');
+    if (S.stats.unitsBought >= 2) tip('merge', 'Aynı şampiyondan 3 tane alırsan 2★ olur, 3 tane 2★ ise 3★');
     TFT.UI && TFT.UI.renderAll();
   }
 
@@ -447,6 +456,7 @@ window.TFT = window.TFT || {};
     }
     addUnitToBench(opt.champId, 1, [opt.item]);
     pushLog(`🎠 ${champ.name} seçildi`);
+    tip('carousel', 'Eşyayı birimin üzerine sürükleyerek takabilirsin. Birime en fazla 3 eşya takılır');
     S.carousel = null;
     S.phase = 'planning';
     S.timer = 30; S.timerMax = 30;
@@ -499,6 +509,9 @@ window.TFT = window.TFT || {};
     if (isAugmentRound()) { openAugment(); }
     else if (S.roundType === 'carousel') { openCarousel(); }
     pushLog(`— ${S.stage}-${S.round} · ${S.roundType === 'pve' ? 'PvE' : S.roundType === 'carousel' ? 'Carousel' : 'PvP'} —`);
+    if (S.stage === 1 && S.round === 1) tip('start', 'Yedekteki birimi tahtaya sürükle, sonra R ile savaşı başlat');
+    if (S.stage === 2 && S.round === 1) tip('trait', 'Sol panelde sinerjilere tıklayarak eşikleri görebilirsin');
+    if (S.stage === 3 && S.round === 1) tip('econ', 'Faiz için 10 altın üstü biriktir; seri bonusunu kaçırma');
     TFT.UI && TFT.UI.renderAll();
     TFT.UI && TFT.UI.renderTimer();
   }
@@ -517,6 +530,7 @@ window.TFT = window.TFT || {};
   function startCombat() {
     if (S.phase === 'combat' || S.phase === 'result' || S.phase === 'gameover') return;
     if (S.phase === 'augment') { TFT.UI && TFT.UI.toast('Önce bir augment seç', 'bad'); return; }
+    if (!S.board.length) { TFT.UI && TFT.UI.toast('Tahtada birim yok — bu savaşı kaybedeceksin!', 'bad'); }
     if (S.phase === 'carousel') { autoPickCarousel(); }
     S.phase = 'combat';
     S.result = null;
@@ -556,6 +570,7 @@ window.TFT = window.TFT || {};
     const survivors = cb.survivors('enemy');
     S.stats.rounds++;
     if (win) S.stats.wins++; else S.stats.losses++;
+    if (!win) tip('loss', 'Karakterlerin otomatik savaşır — yıldız, eşya ve sinerji gücü belirler');
 
     let playerDmg = 0;
     if (!win) playerDmg = damageFor(S.stage, survivors);
