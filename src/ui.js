@@ -55,6 +55,50 @@ window.TFT = window.TFT || {};
     } catch (e) { }
   }
 
+  /* ================= MOBİL MOD ================= */
+  function isMobile() {
+    try {
+      const w = window.innerWidth || 1024;
+      if (w <= 820) return true;                       // telefon / dar pencere
+      const coarse = window.matchMedia && window.matchMedia('(pointer:coarse)').matches;
+      if (coarse && w <= 1080) return true;            // tablet, dokunmatik küçük ekran
+      return false;
+    } catch (e) { return window.innerWidth <= 820; }
+  }
+  let measureScheduled = false;
+  function scheduleMeasure() {
+    if (measureScheduled) return;
+    measureScheduled = true;
+    requestAnimationFrame(() => { measureScheduled = false; measureMobile(); });
+  }
+  function measureMobile() {
+    const root = document.documentElement;
+    if (!document.body.classList.contains('is-mobile')) {
+      root.style.removeProperty('--top-h');
+      root.style.removeProperty('--shop-h');
+      root.style.removeProperty('--bar-h');
+      return;
+    }
+    const top = ($('#topbar') && $('#topbar').offsetHeight) || 70;
+    const shop = ($('#right-panel') && $('#right-panel').offsetHeight) || 150;
+    const bar = ($('#bottombar') && $('#bottombar').offsetHeight) || 46;
+    root.style.setProperty('--top-h', top + 'px');
+    root.style.setProperty('--shop-h', shop + 'px');
+    root.style.setProperty('--bar-h', bar + 'px');
+    layout();
+  }
+  function applyMode() {
+    const mob = isMobile();
+    const wasMobile = document.body.classList.contains('is-mobile');
+    document.body.classList.toggle('is-mobile', mob);
+    if (mob !== wasMobile) {
+      closeDrawer(); closeSheet();
+      if (!mob) hideTooltip();
+    }
+    layout();
+    scheduleMeasure();
+  }
+
   /* ================= LAYOUT ================= */
   function applyHexSize(size) {
     hexW = size;
@@ -74,8 +118,9 @@ window.TFT = window.TFT || {};
     if (!center) return;
     const cw = center.clientWidth || 600;
     const chh = center.clientHeight || 600;
-    const byW = (cw - 26) / 7.6;
-    const byH = (chh - 96) / 7.35;
+    const mob = document.body.classList.contains('is-mobile');
+    const byW = (cw - (mob ? 6 : 26)) / 7.6;
+    const byH = (chh - (mob ? 84 : 96)) / 7.35;
     let size = Math.max(26, Math.min(byW, byH, 82));
     applyHexSize(size);
 
@@ -121,6 +166,25 @@ window.TFT = window.TFT || {};
     return { x: c * hexW + (r % 2 ? hexW / 2 : 0) + hexW / 2, y: r * hexH * 0.76 + hexH / 2 };
   }
 
+  /* ================= PORTRE / GÖRSEL ================= */
+  function hexToRgba(hex, a) {
+    let h = (hex || '#4d6f9e').replace('#', '');
+    if (h.length === 3) h = h.split('').map(x => x + x).join('');
+    const n = parseInt(h, 16);
+    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+  }
+  function portraitStyle(ch) {
+    const traits = (ch && ch.traits) || [];
+    const t1 = (DATA.TRAITS[traits[0]] || {}).color || '#4d6f9e';
+    const t2 = (DATA.TRAITS[traits[1]] || {}).color || t1;
+    return `background:radial-gradient(circle at 34% 24%, ${hexToRgba(t1, 0.92)} 0%, ${hexToRgba(t2, 0.45)} 52%, #08101d 100%)`;
+  }
+  function traitGlyph(ch) {
+    const traits = (ch && ch.traits) || [];
+    const t = DATA.TRAITS[traits[0]];
+    return t ? t.icon : '✦';
+  }
+
   /* ================= TOKEN ================= */
   function champOf(u) {
     if (u.champId) return CH[u.champId];
@@ -140,8 +204,11 @@ window.TFT = window.TFT || {};
     const shieldPct = opts.combat && u.shield ? clamp((u.shield / u.maxHp) * 100, 0, 100) : 0;
     return `
       <div class="unit-inner">
-        <div class="unit-ring"></div>
-        <div class="unit-portrait">${ch.icon}</div>
+        <div class="unit-ring" style="${portraitStyle(ch)}"></div>
+        <div class="unit-portrait">
+          <span class="portrait-glyph">${traitGlyph(ch)}</span>
+          <span class="portrait-icon">${ch.icon}</span>
+        </div>
         <div class="unit-stars">${stars}</div>
         ${(u.items && u.items.length) ? `<div class="unit-items">${items}</div>` : ''}
         ${opts.bench ? '' : `<div class="unit-bars">
@@ -155,7 +222,8 @@ window.TFT = window.TFT || {};
   function makeToken(u, opts) {
     const ch = champOf(u);
     const d = document.createElement('div');
-    d.className = `unit-token c${ch.cost || 1}` + (opts.enemy ? ' enemy-token' : '');
+    d.className = `unit-token c${ch.cost || 1}` + (opts.enemy ? ' enemy-token' : '') +
+      (S && S.selectedUid === u.uid ? ' selected' : '');
     d.dataset.uid = u.uid;
     d.innerHTML = tokenHTML(u, opts);
     if (opts.bench) {
@@ -202,7 +270,8 @@ window.TFT = window.TFT || {};
     wrap.innerHTML = '';
     for (let i = 0; i < DATA.ITEM_BENCH_SIZE; i++) {
       const slot = document.createElement('div');
-      slot.className = 'item-slot' + (S.items[i] ? ' filled ' + (S.items[i].comp ? 'component' : 'completed') : '');
+      slot.className = 'item-slot' + (S.items[i] ? ' filled ' + (S.items[i].comp ? 'component' : 'completed') : '') +
+        (selectedItemSlot === i ? ' selected' : '');
       slot.dataset.item = i;
       if (S.items[i]) slot.innerHTML = `<span class="item-ico">${S.items[i].icon}</span>`;
       wrap.appendChild(slot);
@@ -227,7 +296,10 @@ window.TFT = window.TFT || {};
       d.className = 'shop-card c' + ch.cost + (owned >= 2 ? ' owned' : '');
       d.dataset.shop = i;
       d.innerHTML = `
-        <div class="sc-portrait">${ch.icon}</div>
+        <div class="sc-portrait" style="${portraitStyle(ch)}">
+          <span class="portrait-glyph">${traitGlyph(ch)}</span>
+          <span class="portrait-icon">${ch.icon}</span>
+        </div>
         <div class="sc-main">
           <div class="sc-name">${ch.name}</div>
           <div class="sc-traits">${ch.traits.map(t => DATA.TRAITS[t].icon + ' ' + DATA.TRAITS[t].name).join(' · ')}</div>
@@ -905,6 +977,32 @@ window.TFT = window.TFT || {};
 
   /* ================= SÜRÜKLE-BIRAK ================= */
   let drag = null;
+  let selectedItemSlot = null;
+
+  function setHint(html) {
+    const el = $('#item-hint');
+    if (!el) return;
+    if (html) { el.innerHTML = html; el.classList.remove('hidden'); }
+    else { el.classList.add('hidden'); }
+  }
+  function updateItemHint() {
+    const it = selectedItemSlot !== null ? S.items[selectedItemSlot] : null;
+    if (it) {
+      setHint(`${it.icon} <b>${it.name}</b> — bir birime dokun (tak) veya başka bir bileşene dokun (birleştir)`);
+      return;
+    }
+    const u = (S.selectedUid && document.body.classList.contains('is-mobile')) ? G.unitByUid(S.selectedUid) : null;
+    if (u && u.r < 0) {
+      setHint(`👆 <b>${CH[u.champId].name}</b> — tahtada bir kareye dokun (yerleştir) · bilgi için tekrar dokun`);
+      return;
+    }
+    setHint('');
+  }
+  function clearItemSelection() {
+    if (selectedItemSlot === null) return;
+    selectedItemSlot = null;
+    updateItemHint(); renderItems();
+  }
 
   function startDrag(e, data) {
     drag = Object.assign({
@@ -969,7 +1067,7 @@ window.TFT = window.TFT || {};
     if (drag.el) drag.el.classList.remove('dragging');
     $$('.hex.hover,.hex.invalid,.bench-slot.hover,.item-slot.hover').forEach(el => el.classList.remove('hover', 'invalid'));
     const d = drag; drag = null;
-    if (!d.moved) return;
+    if (!d.moved) { handleTap(d); return; }
     const under = document.elementFromPoint(x, y);
     if (!under) return;
     if (d.kind === 'unit') {
@@ -1005,6 +1103,121 @@ window.TFT = window.TFT || {};
     }
   }
 
+  function handleTap(d) {
+    if (d.kind === 'unit') {
+      const u = G.unitByUid(d.uid);
+      if (!u) return;
+      if (selectedItemSlot !== null) {
+        const it = S.items[selectedItemSlot];
+        if (!it) { clearItemSelection(); return; }
+        if (G.equipItem(d.uid, selectedItemSlot)) { selectedItemSlot = null; updateItemHint(); renderItems(); }
+        return;
+      }
+      S.selectedUid = d.uid;
+      renderInfo();
+      if (document.body.classList.contains('is-mobile')) {
+        renderBoardUnits(); renderBench();
+        if (u.r < 0 && d.prevSel !== d.uid) { updateItemHint(); return; } // yedekte: ilk dokunuş seçer
+        openUnitSheet(d.uid);
+      } else {
+        updateItemHint();
+      }
+    } else if (d.kind === 'item') {
+      const slot = d.itemSlot;
+      if (selectedItemSlot === slot) { clearItemSelection(); return; }
+      if (selectedItemSlot === null) { selectedItemSlot = slot; }
+      else {
+        const A = S.items[selectedItemSlot], B = S.items[slot];
+        if (A && B) {
+          if (A.comp && B.comp) {
+            G.combineItems(selectedItemSlot, slot);
+            selectedItemSlot = null;
+          } else if (!A.comp && B.comp) {
+            selectedItemSlot = slot;
+          } else {
+            G.moveItemToSlot(selectedItemSlot, slot);
+            selectedItemSlot = slot;
+          }
+        } else if (A) {
+          G.moveItemToSlot(selectedItemSlot, slot);
+          selectedItemSlot = slot;
+        }
+      }
+      updateItemHint(); renderItems();
+    }
+  }
+
+  /* ================= ALT SAYFA: BİRİM ================= */
+  function openUnitSheet(uid) {
+    const u = G.unitByUid(uid);
+    const root = $('#sheet-root');
+    if (!u || !root) return;
+    const ch = CH[u.champId];
+    const hp = Math.round(ch.hp * DATA.STAR_MULT.hp[u.star - 1]);
+    const ad = Math.round(ch.ad * DATA.STAR_MULT.ad[u.star - 1]);
+    const items = u.items.length
+      ? u.items.map(it => `<div class="sheet-item ${it.completed ? 'completed' : ''}" title="${it.name}">${it.icon}</div>`).join('')
+      : `<div style="color:#6f84a3;font-size:11px">Eşya yok — eşya panelinden bir eşya seç ve bu birime dokun</div>`;
+    root.innerHTML = `
+      <div class="sheet-bd"></div>
+      <div class="sheet">
+        <div class="sheet-grab"></div>
+        <div class="sheet-head">
+          <div class="sheet-portrait" style="${portraitStyle(ch)}">
+            <span class="portrait-glyph">${traitGlyph(ch)}</span>
+            <span class="portrait-icon">${ch.icon}</span>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="sheet-name">${ch.name} <span class="sheet-stars">${'★'.repeat(u.star)}</span></div>
+            <div class="sheet-traits">${ch.traits.map(t => DATA.TRAITS[t].icon + ' ' + DATA.TRAITS[t].name).join(' · ')}</div>
+            <div class="sheet-traits" style="color:#ffd166;margin-top:2px">${ch.cost} 🪙 · Satış ${G.sellPrice(u)} 🪙</div>
+          </div>
+        </div>
+        <div class="sheet-stats">
+          <div class="sheet-stat"><b>${hp}</b><span>CAN</span></div>
+          <div class="sheet-stat"><b>${ad}</b><span>SALDIRI</span></div>
+          <div class="sheet-stat"><b>${ch.armor}</b><span>ZIRH</span></div>
+          <div class="sheet-stat"><b>${ch.mr}</b><span>DİRENÇ</span></div>
+          <div class="sheet-stat"><b>${ch.range}</b><span>MENZİL</span></div>
+          <div class="sheet-stat"><b>${ch.mana}</b><span>MANA</span></div>
+        </div>
+        <div class="sheet-ability"><b>✨ ${ch.ability.name}</b><br>${ch.ability.text}<br><span style="color:#8be0a0">${DATA.abilityText(ch, u.star)}</span></div>
+        <div class="sheet-items">${items}</div>
+        <div class="sheet-actions">
+          <button class="btn sell" data-sheet-sell="${u.uid}">SAT (+${G.sellPrice(u)}🪙)</button>
+          <button class="btn close" data-sheet-close="1">KAPAT</button>
+        </div>
+      </div>`;
+    setHint('');
+    root.classList.remove('hidden');
+    root.querySelector('.sheet-bd').addEventListener('click', closeSheet);
+    const sellBtn = root.querySelector('[data-sheet-sell]');
+    if (sellBtn) sellBtn.addEventListener('click', () => { G.sellUnit(uid); closeSheet(); });
+    const closeBtn = root.querySelector('[data-sheet-close]');
+    if (closeBtn) closeBtn.addEventListener('click', closeSheet);
+  }
+  function closeSheet() {
+    const root = $('#sheet-root');
+    if (!root) return;
+    root.classList.add('hidden');
+    root.innerHTML = '';
+  }
+
+  /* ================= ÇEKMECE: SİNERJİLER ================= */
+  function openDrawer() {
+    const p = $('#traits-panel'); if (!p) return;
+    p.classList.add('open');
+    const bd = $('#drawer-backdrop'); if (bd) bd.classList.add('show');
+  }
+  function closeDrawer() {
+    const p = $('#traits-panel'); if (p) p.classList.remove('open');
+    const bd = $('#drawer-backdrop'); if (bd) bd.classList.remove('show');
+  }
+  function toggleDrawer() {
+    const p = $('#traits-panel');
+    if (p && p.classList.contains('open')) closeDrawer(); else openDrawer();
+  }
+
   function bindPointer() {
     document.addEventListener('pointerdown', e => {
       if (S.phase === 'gameover') return;
@@ -1014,7 +1227,7 @@ window.TFT = window.TFT || {};
         const uid = +unitEl.dataset.uid;
         const u = G.unitByUid(uid);
         if (!u) return;
-        startDrag(e, { kind: 'unit', uid, el: unitEl });
+        startDrag(e, { kind: 'unit', uid, el: unitEl, prevSel: S.selectedUid });
         S.selectedUid = uid;
         renderInfo();
         e.preventDefault();
@@ -1050,6 +1263,21 @@ window.TFT = window.TFT || {};
 
   function bindClicks() {
     document.addEventListener('click', e => {
+      if (document.body.classList.contains('is-mobile') && S.phase === 'planning' && S.selectedUid) {
+        const hexEl = e.target.closest('#board .hex');
+        const bsEl = e.target.closest('.bench-slot');
+        const u = G.unitByUid(S.selectedUid);
+        if (u && hexEl && !e.target.closest('.unit-token')) {
+          G.placeUnit(u.uid, +hexEl.dataset.r, +hexEl.dataset.c);
+          S.selectedUid = null; renderInfo(); updateItemHint();
+          return;
+        }
+        if (u && bsEl && u.r >= 0) {
+          G.benchUnit(u.uid, +bsEl.dataset.bench);
+          S.selectedUid = null; renderInfo(); updateItemHint();
+          return;
+        }
+      }
       const shopCard = e.target.closest('.shop-card');
       if (shopCard && shopCard.dataset.shop !== undefined && S.phase === 'planning') {
         G.buyUnit(+shopCard.dataset.shop); return;
@@ -1058,6 +1286,10 @@ window.TFT = window.TFT || {};
       if (sellBtn) { G.sellUnit(+sellBtn.dataset.sell); return; }
       const itemEl = e.target.closest('.item-slot.filled');
       if (itemEl && S.items[+itemEl.dataset.item]) {
+        if (document.body.classList.contains('is-mobile')) {
+          if (S.phase === 'combat') { showItemTooltip(S.items[+itemEl.dataset.item], e.clientX, e.clientY); setTimeout(hideTooltip, 2200); }
+          return;
+        }
         const it = S.items[+itemEl.dataset.item];
         showItemTooltip(it, e.clientX, e.clientY);
         setTimeout(hideTooltip, 2200);
@@ -1074,8 +1306,9 @@ window.TFT = window.TFT || {};
 
     });
 
-    // hover tooltipleri
+    // hover tooltipleri (mobilde planlama fazında alt sayfa kullanılır)
     document.addEventListener('mouseover', e => {
+      if (document.body.classList.contains('is-mobile') && S.phase !== 'combat') return;
       const unitEl = e.target.closest('.unit-token');
       if (unitEl) {
         if (S.phase === 'combat' && S.combat) {
@@ -1123,6 +1356,10 @@ window.TFT = window.TFT || {};
       $('#btn-sound').textContent = soundOn ? '🔊' : '🔇';
     });
     on('#btn-help', () => showHelp());
+    on('#btn-traits', () => toggleDrawer());
+    on('#btn-traits-close', () => closeDrawer());
+    const bd = $('#drawer-backdrop');
+    if (bd) bd.addEventListener('click', closeDrawer);
 
     document.addEventListener('keydown', e => {
       if (e.target.tagName === 'INPUT') return;
@@ -1149,6 +1386,7 @@ window.TFT = window.TFT || {};
     renderInfo();
     if (S.phase !== 'combat') renderBoardUnits();
     renderTimer();
+    scheduleMeasure();
   }
 
   /* ================= ANA DÖNGÜ ================= */
@@ -1180,9 +1418,13 @@ window.TFT = window.TFT || {};
     bindPointer();
     bindClicks();
     bindButtons();
-    window.addEventListener('resize', () => { layout(); });
-    window.addEventListener('load', () => { layout(); });
-    setTimeout(layout, 250);
+    applyMode();
+    window.addEventListener('resize', () => { applyMode(); });
+    window.addEventListener('orientationchange', () => { setTimeout(applyMode, 120); });
+    window.addEventListener('load', () => { applyMode(); });
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { scheduleMeasure(); });
+    setTimeout(applyMode, 250);
+    setTimeout(applyMode, 800);
     document.addEventListener('dragstart', e => e.preventDefault());
     if (document.body.classList.contains('dragging-unit')) { }
     // dragging sınıfını sell-zone için izle
@@ -1200,6 +1442,8 @@ window.TFT = window.TFT || {};
     setCombatMode, showResult, showCarousel, showScout, showWelcome, showNextOpponent, hideNextOpponent, showAugments, showGameOver, showHelp,
     toast, sfx, hideModal, layout, showTraitDetail,
     showUnitTooltip, showChampTooltip, showItemTooltip, showTraitTooltip, showTooltip, hideTooltip,
-    skipCombat, updateCombat, positionCombatTokens
+    skipCombat, updateCombat, positionCombatTokens,
+    applyMode, measureMobile, openUnitSheet, closeSheet, openDrawer, closeDrawer, isMobile,
+    clearItemSelection
   };
 })();
