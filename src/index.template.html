@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#05080f" />
+<title>TFT Arena — Offline</title>
+<!--INJECT_CSS-->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>" />
+</head>
+<body>
+<div id="app">
+  <!-- ÜST BAR -->
+  <header id="topbar">
+    <div class="brand">
+      <div class="brand-crest">⚔️</div>
+      <div class="brand-text">
+        <div class="brand-title">TFT ARENA</div>
+        <div class="brand-sub">OFFLINE · 8 OYUNCU</div>
+      </div>
+    </div>
+    <div id="stage-info" class="stage-info">
+      <div class="stage-round" id="stage-round">1-1</div>
+      <div class="stage-name" id="stage-name">PvE Turu</div>
+    </div>
+    <div id="players-strip" class="players-strip"></div>
+    <div class="topbar-right">
+      <div id="round-timer" class="round-timer">
+        <svg viewBox="0 0 36 36" class="timer-ring"><circle class="ring-bg" cx="18" cy="18" r="16"></circle><circle id="ring-fg" class="ring-fg" cx="18" cy="18" r="16"></circle></svg>
+        <span id="timer-text">30</span>
+      </div>
+      <button id="btn-traits" class="icon-btn mobile-only" title="Sinerjiler">📊</button>
+      <button id="btn-speed" class="icon-btn" title="Hız">1x</button>
+      <button id="btn-sound" class="icon-btn" title="Ses">🔊</button>
+      <button id="btn-help" class="icon-btn" title="Yardım">?</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- SOL: TRAITLER -->
+    <aside id="traits-panel" class="panel">
+      <div class="panel-head">
+        <span>AKTİF SİNERJİLER</span>
+        <span id="btn-traits-close" class="lock mobile-only" style="cursor:pointer">✕</span>
+      </div>
+      <div id="traits-list" class="traits-list"></div>
+      <div id="trait-detail" class="trait-detail hidden"></div>
+    </aside>
+
+    <!-- ORTA: TAHTA -->
+    <section id="center">
+      <div id="opponent-banner" class="opponent-banner hidden"></div>
+      <div id="board-wrap">
+        <div id="board">
+          <div id="hex-layer"></div>
+          <div id="fx-layer"></div>
+          <div id="unit-layer"></div>
+        </div>
+      </div>
+      <div id="bench-wrap">
+        <div class="bench-label">YEDEK</div>
+        <div id="bench"></div>
+        <div id="item-bench-wrap">
+          <div class="bench-label">EŞYALAR</div>
+          <div id="item-bench"></div>
+        </div>
+      </div>
+      <div id="combat-bar" class="combat-bar hidden">
+        <div class="combat-side ally"><span id="ally-alive">0</span><small>TAKIMIN</small></div>
+        <div class="combat-mid"><button id="btn-skip" class="btn small">Savaşı Bitir ⏭</button></div>
+        <div class="combat-side enemy"><span id="enemy-alive">0</span><small>DÜŞMAN</small></div>
+      </div>
+    </section>
+
+    <!-- SAĞ: MAĞAZA -->
+    <aside id="right-panel" class="panel">
+      <div id="unit-info" class="unit-info"></div>
+      <div class="shop-block">
+        <div class="panel-head">
+          <span>MAĞAZA</span>
+          <span id="shop-lock" class="lock" title="Mağazayı kilitle">🔓</span>
+        </div>
+        <div id="shop" class="shop"></div>
+        <div class="shop-actions">
+          <button id="btn-xp" class="btn gold">
+            <span class="btn-ico">⬆</span> XP AL
+            <span class="btn-cost">4</span>
+          </button>
+          <button id="btn-reroll" class="btn">
+            <span class="btn-ico">🔄</span> YENİLE
+            <span class="btn-cost">2</span>
+          </button>
+        </div>
+        <div class="xp-row"><div class="xp-bar"><div id="xp-fill"></div></div><span id="xp-text">0/2</span></div>
+      </div>
+      <div class="panel-head"><span>SİNERJİLER</span></div>
+      <div id="traits-mini" class="traits-mini"></div>
+    </aside>
+  </main>
+
+  <!-- ALT BAR -->
+  <footer id="bottombar">
+    <div class="bot-left">
+      <div class="stat-pill hp-pill">
+        <span class="pill-ico">❤️</span>
+        <div class="pill-body"><div class="pill-label">CAN</div><div class="pill-value"><span id="player-hp">100</span></div></div>
+      </div>
+      <div class="stat-pill gold-pill">
+        <span class="pill-ico">🪙</span>
+        <div class="pill-body"><div class="pill-label">ALTIN</div><div class="pill-value"><span id="player-gold">0</span></div></div>
+      </div>
+      <div class="stat-pill lvl-pill">
+        <span class="pill-ico">⭐</span>
+        <div class="pill-body"><div class="pill-label">SEVİYE</div><div class="pill-value"><span id="player-level">2</span></div></div>
+      </div>
+      <div class="stat-pill streak-pill">
+        <span class="pill-ico">🔥</span>
+        <div class="pill-body"><div class="pill-label">SERİ</div><div class="pill-value"><span id="player-streak">0</span></div></div>
+      </div>
+    </div>
+    <div class="board-pills" id="board-pills"></div>
+    <div class="bot-right">
+      <button id="btn-arrange" class="btn" title="Otomatik diz">⚡ DİZ</button>
+      <button id="btn-ready" class="btn ready">HAZIR! <span class="key">R</span></button>
+    </div>
+  </footer>
+</div>
+
+<div id="drawer-backdrop" class="drawer-backdrop"></div>
+<div id="item-hint" class="item-hint hidden"></div>
+<div id="tooltip" class="tooltip hidden"></div>
+<div id="modal-root" class="modal-root hidden"></div>
+<div id="sheet-root" class="sheet-root hidden"></div>
+<div id="toast-root"></div>
+<!-- build: __STAMP__ -->
+
+<!--INJECT_JS-->
+</body>
+</html>
