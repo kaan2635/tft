@@ -646,6 +646,13 @@ body.is-mobile{
   overflow:hidden; -webkit-tap-highlight-color:transparent;
 }
 body.is-mobile #app{display:block; height:100dvh; min-height:100dvh}
+/* sürükleme sırasında tarayıcı kaydırması/jesti iptal etmesin */
+body.is-mobile #board, body.is-mobile #board .hex, body.is-mobile #unit-layer,
+body.is-mobile .unit-token, body.is-mobile .bench-slot, body.is-mobile #bench,
+body.is-mobile .item-slot, body.is-mobile #item-bench, body.is-mobile .carousel-card,
+body.is-mobile .augment-card, body.is-mobile .shop-card, body.is-mobile .icon-btn,
+body.is-mobile .btn{touch-action:none}
+body.is-mobile .unit-token{-webkit-user-drag:none}
 body.is-mobile #rotate-hint{display:none !important}
 
 /* --- üst bar --- */
@@ -1050,7 +1057,7 @@ body.is-mobile .tooltip{display:none !important}
 <div id="modal-root" class="modal-root hidden"></div>
 <div id="sheet-root" class="sheet-root hidden"></div>
 <div id="toast-root"></div>
-<!-- build: 2026-11-12 21:50 -->
+<!-- build: 2026-11-12 21:51 -->
 
 <script>
 /* ==== data.js ==== */
