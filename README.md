@@ -39,11 +39,33 @@ python3 -m http.server 8000
 ### Kısayollar
 `D` yenile · `F` XP al · `R` hazır (savaşı başlat) · `E` seçili birimi sat · `1-5` mağaza slotu · `Esc` seçimi bırak · `Boşluk` hazır
 
-### Fare / dokunmatik
+### Fare ile
 - Birimleri **tahta ↔ yedek** arasında sürükle; dolu hex'e bırakınca yer değiştirir.
 - Eşyayı birimin üstüne sürükle → takılır.
 - Birimi sağ alttaki **SAT** alanına (veya mağaza panelinin üstüne) sürükle → sat.
 - Savaş sırasında **⏭ Savaşı Bitir** ile simülasyonu hızlandır; sağ üstten 1x/2x/3x hız.
+
+### 📱 Telefon / tablet (dokunmatik)
+Hover'a bağlı hiçbir şey yok — her şey tek dokunuşla çalışır. Ekran dar ya da işaretçi dokunmatikse arayüz
+otomatik olarak **mobil düzene** geçer (`body.is-mobile`): mağaza alta, sinerjiler çekmeceye, yedek + eşya
+tahtanın hemen altına taşınır.
+
+| Ne yapmak istiyorsun? | Nasıl? |
+|---|---|
+| Birim al | Mağaza kartına dokun (5 kart yan yana, maliyet renkli çerçeve) |
+| Yedeğe yerleştir | **Birime dokun** (seçilir, altın halka) → tahtada bir kareye dokun |
+| Yedekten tahtaya alma | Yedekteki birime dokun → kareye dokun (ilk dokunuş seçer) |
+| Birim bilgisi / satış | Tahtadaki birime dokun → alt sayfa: istatistikler, yetenek, eşyalar, **SAT** |
+| Eşya tak | Eşya yuvasına dokun (ipucu çıkar) → birime dokun |
+| Eşya birleştir | Bileşen → bileşen dokun (aynı davranış) |
+| Sinerjiler | Üst barda **📊** → soldan çekmece açılır, **✕** / perde kapatır |
+| Yenile / XP | **🔄 YENİLE**, **⬆ XP AL** düğmeleri |
+| Diz / Hazır | **⚡ DİZ**, **HAZIR!** |
+| Savaş | Otomatik; **⏭ Savaşı Bitir** ile hızlandır |
+
+Yatay tutunca (landscape) arayüz kendini yeniden kurar: mağaza sağ sütuna geçer, tahta tam yüksekliği kullanır.
+Çift dokunuş yakınlaştırması, kaydırma zıplaması ve metin seçimi kapatılmıştır; `env(safe-area-inset-*)` ile
+çentikli ekranlar desteklenir.
 
 ## Özellikler
 
@@ -59,8 +81,10 @@ python3 -m http.server 8000
 ## Dosya yapısı
 
 ```
-index.html          iskelet (tek sayfa)
-assets/style.css    tüm tema + hex tahta + animasyonlar
+index.html          ÜRETİLEN tek dosya (CSS + JS gömülü) — doğrudan açılır
+src/index.template.html  şablon (gövde iskeleti, INJECT işaretleri)
+tools/build.py      şablon + css + js dosyalarını index.html içine gömer
+assets/style.css    tüm tema + hex tahta + animasyonlar + mobil katman
 src/data.js         şampiyonlar, sinerjiler, eşyalar, augmentlar, PvE, sabitler
 src/combat.js       DOM'suz savaş motoru (hex math, hedefleme, yetenekler, eşya etkileri)
 src/bots.js         bot kadro üretimi, güç hesabı, bot-bot sonucu, PvE dalgaları
@@ -86,6 +110,18 @@ NODE_PATH=./node_modules node tests/autoplay2.js 3
 
 # Zafer / eleme / yeniden başlatma akışı
 NODE_PATH=./node_modules node tests/victory-test.js
+
+# Mobil düzen + dokunmatik etkileşimler (390x844)
+NODE_PATH=./node_modules node tests/mobile-test.js
+
+# Tam oyunu sadece dokunuşlarla oynatan uçtan uca test
+NODE_PATH=./node_modules node tests/mobile-flow-test.js
+```
+
+### Tek dosyayı yeniden üretmek
+`src/` veya `assets/` içinde değişiklik yaptıysan:
+```bash
+python3 tools/build.py   # -> index.html (CSS + JS gömülü, harici istek yok)
 ```
 
 Motor testi tüm 53 şampiyonu, 36 eşyayı, 22 sinerjiyi, PvE dalgalarını ve 100 rastgele savaşı kapsar. Etki testi her sinerjinin ve her eşyanın gerçekten uygulandığını doğrular.
