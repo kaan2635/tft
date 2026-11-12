@@ -120,7 +120,14 @@ window.TFT = window.TFT || {};
     const chh = center.clientHeight || 600;
     const mob = document.body.classList.contains('is-mobile');
     const byW = (cw - (mob ? 6 : 26)) / 7.6;
-    const byH = (chh - (mob ? 84 : 96)) / 7.35;
+    // yedek/eşya şeridinin gerçek yüksekliğini ölç (mobilde sabit, masaüstünde hexW'ye bağlı)
+    let reserve = 96;
+    if (mob) {
+      const bwEl = $('#bench-wrap');
+      const measured = bwEl ? bwEl.offsetHeight : 0;
+      reserve = measured > 20 ? Math.min(measured + 12, 160) : 84;
+    }
+    const byH = (chh - reserve) / 7.35;
     let size = Math.max(26, Math.min(byW, byH, 82));
     applyHexSize(size);
 
