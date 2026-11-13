@@ -180,11 +180,25 @@ window.TFT = window.TFT || {};
     const n = parseInt(h, 16);
     return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
   }
+  function artKey(ch) {
+    if (!ch) return 'warrior';
+    if (ch.cost >= 5) return 'legendary';
+    const t = ch.traits || [];
+    if (t.indexOf('assassin') >= 0 || t.indexOf('ninja') >= 0) return 'assassin';
+    if (t.indexOf('sorcerer') >= 0 || t.indexOf('elementalist') >= 0 || t.indexOf('demon') >= 0) return 'mage';
+    if (t.indexOf('guardian') >= 0 || t.indexOf('knight') >= 0) return 'guardian';
+    if (t.indexOf('ranger') >= 0 || t.indexOf('gunslinger') >= 0 || (ch.range || 1) >= 3) return 'ranger';
+    return 'warrior';
+  }
   function portraitStyle(ch) {
     const traits = (ch && ch.traits) || [];
     const t1 = (DATA.TRAITS[traits[0]] || {}).color || '#4d6f9e';
     const t2 = (DATA.TRAITS[traits[1]] || {}).color || t1;
-    return `background:radial-gradient(circle at 34% 24%, ${hexToRgba(t1, 0.92)} 0%, ${hexToRgba(t2, 0.45)} 52%, #08101d 100%)`;
+    const key = artKey(ch);
+    return 'background-size:cover,cover; background-position:center,center; background-image:' +
+      'radial-gradient(circle at 50% 46%, rgba(4,8,15,.62) 0%, rgba(4,8,15,.22) 52%, rgba(4,8,15,0) 76%),' +
+      `linear-gradient(180deg, ${hexToRgba(t1, 0.40)} 0%, ${hexToRgba(t2, 0.26)} 58%, rgba(4,8,14,.45) 100%),` +
+      `var(--art-${key})`;
   }
   function traitGlyph(ch) {
     const traits = (ch && ch.traits) || [];
@@ -596,7 +610,10 @@ window.TFT = window.TFT || {};
         ${opts.map((o, i) => {
       const ch = CH[o.champId];
       return `<div class="carousel-card" data-carousel="${i}">
-            <div class="cc-ico">${ch.icon}</div>
+            <div class="cc-portrait" style="${portraitStyle(ch)}">
+              <span class="portrait-glyph">${traitGlyph(ch)}</span>
+              <span class="portrait-icon">${ch.icon}</span>
+            </div>
             <div class="cc-name">${ch.name}</div>
             <div class="cc-traits">${ch.traits.map(t => DATA.TRAITS[t].icon).join(' ')}</div>
             <div class="cc-item">${o.item.icon} ${o.item.name}</div>
@@ -657,22 +674,60 @@ window.TFT = window.TFT || {};
   }
 
   function showWelcome(onStart) {
-    openModal(`
-      <h2 style="text-align:center;font-size:24px">⚔️ TFT ARENA</h2>
-      <p class="sub" style="text-align:center">7 bot oyuncuya karşı offline otomatik savaş. Sona kalan kazanır.</p>
-      <div class="help-grid" style="margin-bottom:6px">
-        <div><h4>1 · Şampiyon al</h4>Alttaki mağazadan şampiyon satın al. Aynı şampiyondan 3 tane alırsan <b>2★</b>, 3 tane 2★ ise <b>3★</b> olur.</div>
-        <div><h4>2 · Tahtaya diz</h4>Birimleri yedek alanından <b>hex tahtaya sürükle</b>. Seviye = tahtaya koyabileceğin birim sayısı.</div>
-        <div><h4>3 · Sinerji kur</h4>Sol paneldeki sinerjiler eşik sayısına ulaşınca takımına güç verir. Farklı şampiyonlar sayılır.</div>
-        <div><h4>4 · Eşya tak</h4>İki bileşen eşyayı birleştir, birime sürükle. Birim başına en fazla <b>3 eşya</b>.</div>
-      </div>
-      <p class="sub" style="text-align:center;margin-top:6px">
-        <span class="help-key">D</span> yenile · <span class="help-key">F</span> XP · <span class="help-key">R</span> hazır · <span class="help-key">E</span> sat
-      </p>
-      <div class="modal-actions" style="justify-content:center"><button class="btn ready" id="btn-welcome">OYUNA BAŞLA</button></div>
-    `);
-    const b = $('#btn-welcome');
-    if (b) b.addEventListener('click', () => { hideModal(); if (onStart) onStart(); });
+    const el = $('#intro-screen');
+    if (!el) { // şablon yoksa eski usul
+      openModal('<h2 style="text-align:center">⚔️ TFT ARENA</h2><div class="modal-actions" style="justify-content:center"><button class="btn ready" id="btn-welcome">OYUNA BAŞLA</button></div>');
+      const b2 = $('#btn-welcome');
+      if (b2) b2.addEventListener('click', () => { hideModal(); if (onStart) onStart(); });
+      return;
+    }
+    el.classList.remove('hidden');
+    const strip = $('#intro-champs');
+    if (strip && !strip.dataset.done) {
+      strip.dataset.done = '1';
+      const pool = DATA.CHAMPS.slice().sort((a, b) => b.cost - a.cost).slice(0, 26);
+      const picks = [];
+      for (let i = 0; i < 8; i++) picks.push(pool[Math.floor(Math.random() * pool.length)]);
+      strip.innerHTML = picks.map(ch => `
+        <div class="intro-card c${ch.cost}" style="${portraitStyle(ch)}">
+          <span class="portrait-glyph">${traitGlyph(ch)}</span>
+          <span class="portrait-icon">${ch.icon}</span>
+          <span class="ic-name">${ch.name}</span>
+        </div>`).join('');
+    }
+    const best = $('#intro-best');
+    if (best) {
+      let b = null;
+      try { b = window.localStorage.getItem('tft_best_place_v1'); } catch (e) { }
+      best.textContent = b ? `🏅 En iyi derecen: ${b}.` : '';
+    }
+    const btn = $('#btn-welcome');
+    if (btn && !btn.dataset.bound) {
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', () => { hideWelcome(); if (onStart) onStart(); });
+    }
+    const hb = $('#intro-help');
+    if (hb && !hb.dataset.bound) {
+      hb.dataset.bound = '1';
+      hb.addEventListener('click', () => {
+        const body = $('#intro-help-body');
+        if (body) body.classList.toggle('hidden');
+      });
+    }
+    const sb = $('#intro-sound');
+    if (sb && !sb.dataset.bound) {
+      sb.dataset.bound = '1';
+      sb.addEventListener('click', () => {
+        soundOn = !soundOn;
+        sb.textContent = soundOn ? '🔊 SES' : '🔇 SESSİZ';
+        const top = $('#btn-sound'); if (top) top.textContent = soundOn ? '🔊' : '🔇';
+        if (soundOn) sfx('click');
+      });
+    }
+  }
+  function hideWelcome() {
+    const el = $('#intro-screen');
+    if (el) el.classList.add('hidden');
   }
 
   function showHelp() {
@@ -1446,11 +1501,11 @@ window.TFT = window.TFT || {};
     init, renderAll, renderBoardUnits, renderBench, renderShop, renderItems,
     renderTraits, renderTraitsMini: renderTraits, renderInfo, renderPlayers,
     renderBars, renderTimer, renderTopbar, renderLog,
-    setCombatMode, showResult, showCarousel, showScout, showWelcome, showNextOpponent, hideNextOpponent, showAugments, showGameOver, showHelp,
+    setCombatMode, showResult, showCarousel, showScout, showWelcome, hideWelcome, showNextOpponent, hideNextOpponent, showAugments, showGameOver, showHelp,
     toast, sfx, hideModal, layout, showTraitDetail,
     showUnitTooltip, showChampTooltip, showItemTooltip, showTraitTooltip, showTooltip, hideTooltip,
     skipCombat, updateCombat, positionCombatTokens,
-    applyMode, measureMobile, openUnitSheet, closeSheet, openDrawer, closeDrawer, isMobile,
+    applyMode, measureMobile, openUnitSheet, closeSheet, openDrawer, closeDrawer, isMobile, artKey,
     clearItemSelection
   };
 })();

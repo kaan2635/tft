@@ -1,3 +1,15 @@
+/* =====================================================================
+   ŞAMPİYON SANATI (build sırasında data-uri ile gömülür)
+   ===================================================================== */
+:root{
+  --art-warrior:none;
+  --art-mage:none;
+  --art-ranger:none;
+  --art-assassin:none;
+  --art-guardian:none;
+  --art-legendary:none;
+}
+
 /* ============ TFT ARENA — OFFLINE ============ */
 :root{
   --bg:#05080f;
@@ -177,7 +189,8 @@ button{font-family:inherit; color:inherit; cursor:pointer; border:none; backgrou
 }
 #hex-layer,#fx-layer,#unit-layer{position:absolute; inset:0}
 #fx-layer{pointer-events:none; z-index:5}
-#unit-layer{z-index:6}
+#unit-layer{z-index:6; pointer-events:none}   /* boş hex'lere dokunuş/sürükleme geçsin */
+#unit-layer .unit-token{pointer-events:auto}
 
 .hex{
   position:absolute;
@@ -237,6 +250,9 @@ button{font-family:inherit; color:inherit; cursor:pointer; border:none; backgrou
 .unit-token.c5 .unit-ring{border-color:#f2c14e; box-shadow:0 0 16px rgba(242,193,78,.45)}
 .unit-portrait{position:relative; z-index:2; font-size:calc(var(--hexW) * .40); line-height:1; filter:drop-shadow(0 2px 3px rgba(0,0,0,.8))}
 .unit-token.enemy-token .unit-ring{background:radial-gradient(circle at 50% 35%, rgba(140,50,70,.9), rgba(32,8,16,.95) 70%); border-color:#b04a5e}
+/* düşman jetonu: aynı sanat, kızıl tonlama */
+.unit-token.enemy-token .unit-ring{filter:hue-rotate(-24deg) saturate(1.3) brightness(.82)}
+.unit-token.enemy-token .unit-portrait{filter:drop-shadow(0 0 6px rgba(255,70,90,.5))}
 .unit-token.enemy-token.c5 .unit-ring{border-color:#f2c14e}
 
 .unit-stars{
@@ -372,7 +388,7 @@ button{font-family:inherit; color:inherit; cursor:pointer; border:none; backgrou
 .shop-card.c4{border-left:3px solid #b06bff}
 .shop-card.c5{border-left:3px solid #f2c14e}
 .shop-card.sold{opacity:.25; pointer-events:none}
-.sc-portrait{width:34px;height:34px;border-radius:6px;display:grid;place-items:center;font-size:18px;background:#1b2a44;border:1px solid #2f4463; flex:0 0 auto}
+.sc-portrait{width:46px;height:52px;border-radius:7px;display:grid;place-items:center;font-size:22px;background:#1b2a44;border:1px solid #2f4463; flex:0 0 auto; background-size:cover; background-position:center}
 .shop-card.c4 .sc-portrait{background:linear-gradient(160deg,#2a1a44,#150e24); border-color:#6b45a8}
 .shop-card.c5 .sc-portrait{background:linear-gradient(160deg,#3d2f10,#1f1808); border-color:#b3892f}
 .sc-main{flex:1; min-width:0}
@@ -493,6 +509,15 @@ button{font-family:inherit; color:inherit; cursor:pointer; border:none; backgrou
 }
 .carousel-card:hover{border-color:var(--gold); transform:translateY(-3px)}
 .carousel-card .cc-ico{font-size:26px}
+.cc-portrait{
+  position:relative; display:grid; place-items:center; width:100%; height:68px;
+  border-radius:8px; overflow:hidden; border:1px solid #2f4463;
+  background-size:cover; background-position:center; margin-bottom:4px;
+}
+.cc-portrait .portrait-glyph{position:absolute; font-size:40px; opacity:.18; transform:rotate(-12deg)}
+.cc-portrait .portrait-icon{position:relative; z-index:2; font-size:30px; filter:drop-shadow(0 3px 6px rgba(0,0,0,.9))}
+body.is-mobile .cc-portrait{height:56px}
+body.is-mobile .cc-portrait .portrait-icon{font-size:24px}
 .carousel-card .cc-name{font-size:10.5px; font-weight:700; margin-top:3px}
 .carousel-card .cc-traits{font-size:8px; color:#7f93b3}
 .carousel-card .cc-item{font-size:11px; margin-top:3px; color:var(--gold-2)}
@@ -797,7 +822,7 @@ body.is-mobile #traits-list{overscroll-behavior:contain}
 @keyframes sheetUp{from{transform:translateY(45%); opacity:.35}to{transform:none; opacity:1}}
 .sheet-head{display:flex; gap:12px; align-items:center}
 .sheet-portrait{
-  width:64px; height:64px; border-radius:12px; display:grid; place-items:center;
+  width:74px; height:74px; border-radius:12px; display:grid; place-items:center;
   font-size:34px; border:2px solid #4d6f9e; position:relative; overflow:hidden;
 }
 .sheet-name{font-size:18px; font-weight:800; color:#fff; display:flex; align-items:center; gap:6px}
@@ -921,3 +946,102 @@ body.is-mobile .tooltip{display:none !important}
 }
 .item-hint.hidden{display:none !important}
 .item-hint b{color:#ffd166}
+
+/* =====================================================================
+   GİRİŞ EKRANI
+   ===================================================================== */
+.intro-screen{
+  position:fixed; inset:0; z-index:600; overflow:auto;
+  display:flex; align-items:center; justify-content:center;
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(216,177,85,.18), rgba(0,0,0,0) 55%),
+    radial-gradient(ellipse at 15% 100%, rgba(59,167,255,.18), rgba(0,0,0,0) 55%),
+    radial-gradient(ellipse at 85% 90%, rgba(176,107,255,.16), rgba(0,0,0,0) 55%),
+    linear-gradient(175deg,#070d18,#0a1526 45%,#050a13);
+  animation:introFade .35s ease-out;
+}
+.intro-screen.hidden{display:none !important}
+@keyframes introFade{from{opacity:0} to{opacity:1}}
+.intro-glow{
+  position:absolute; inset:-20% -10% auto; height:70%; pointer-events:none;
+  background:radial-gradient(ellipse at 50% 0%, rgba(216,177,85,.22), rgba(0,0,0,0) 62%);
+  animation:introBreath 6s ease-in-out infinite;
+}
+@keyframes introBreath{0%,100%{opacity:.55; transform:translateY(0)} 50%{opacity:1; transform:translateY(2%)}}
+.intro-inner{
+  position:relative; width:min(560px,94vw); padding:26px 20px 22px; text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+}
+.intro-crest{
+  font-size:44px; line-height:1; filter:drop-shadow(0 6px 18px rgba(216,177,85,.55));
+  animation:crestFloat 4s ease-in-out infinite;
+}
+@keyframes crestFloat{0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-6px) rotate(2deg)}}
+.intro-title{
+  font-size:clamp(38px,11vw,62px); font-weight:900; letter-spacing:3px; margin:0;
+  background:linear-gradient(180deg,#fff6d8,#ffd97a 42%,#c9942c 78%,#8a6418);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 6px 30px rgba(255,201,80,.28); line-height:1;
+}
+.intro-title span{letter-spacing:8px}
+.intro-sub{
+  font-size:10px; letter-spacing:3px; color:#8ea4c4; margin-top:-2px;
+}
+.intro-champs{
+  display:grid; grid-template-columns:repeat(4,1fr); gap:6px; width:100%; margin:10px 0 4px;
+}
+.intro-card{
+  position:relative; border-radius:10px; overflow:hidden; aspect-ratio:3/4;
+  border:1px solid #2f4463; display:grid; place-items:center;
+  box-shadow:0 8px 20px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.08);
+  animation:introCardIn .5s backwards;
+}
+.intro-card:nth-child(1){animation-delay:.02s}.intro-card:nth-child(2){animation-delay:.06s}
+.intro-card:nth-child(3){animation-delay:.1s}.intro-card:nth-child(4){animation-delay:.14s}
+.intro-card:nth-child(5){animation-delay:.18s}.intro-card:nth-child(6){animation-delay:.22s}
+.intro-card:nth-child(7){animation-delay:.26s}.intro-card:nth-child(8){animation-delay:.3s}
+@keyframes introCardIn{from{opacity:0; transform:translateY(14px) scale(.94)} to{opacity:1; transform:none}}
+.intro-card .portrait-glyph{position:absolute; font-size:44px; opacity:.16; transform:rotate(-12deg) scale(1.1); pointer-events:none}
+.intro-card .portrait-icon{position:relative; z-index:2; font-size:30px; filter:drop-shadow(0 3px 6px rgba(0,0,0,.85))}
+.intro-card .ic-name{
+  position:absolute; left:0; right:0; bottom:0; z-index:3; font-size:8.5px; letter-spacing:.3px;
+  padding:8px 2px 3px; color:#e8f0fb; background:linear-gradient(0deg,rgba(4,8,14,.95),rgba(4,8,14,0));
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.intro-card.c4{box-shadow:0 8px 22px rgba(176,107,255,.3), inset 0 0 22px rgba(176,107,255,.18)}
+.intro-card.c5{box-shadow:0 8px 24px rgba(242,193,78,.34), inset 0 0 24px rgba(242,193,78,.22); border-color:#b3892f}
+.intro-play{
+  width:min(320px,84vw); margin-top:6px; padding:16px 20px !important;
+  font-size:17px !important; letter-spacing:2px; border-radius:12px;
+  box-shadow:0 10px 30px rgba(216,177,85,.35) !important;
+}
+.intro-row{display:flex; gap:8px; flex-wrap:wrap; justify-content:center}
+.intro-help-btn{padding:8px 14px; font-size:10.5px; letter-spacing:.6px; background:linear-gradient(180deg,#152340,#0e1728); border:1px solid #2f4463; color:#a9bdd8}
+.intro-best{font-size:11px; color:#ffd166; min-height:14px; letter-spacing:.4px}
+.intro-help{
+  width:100%; text-align:left; background:rgba(10,18,31,.85); border:1px solid #22314a;
+  border-radius:12px; padding:12px 14px; animation:sheetUp .18s ease-out;
+}
+.intro-help.hidden{display:none !important}
+.intro-help-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.intro-help-grid h4{margin:0 0 3px; font-size:11px; color:#ffd166; letter-spacing:.4px}
+.intro-help-grid div{font-size:10.5px; line-height:1.5; color:#a9bdd8}
+.intro-keys{margin-top:10px; font-size:10px; color:#7f93b3; text-align:center; letter-spacing:.5px}
+.intro-foot{font-size:9px; color:#5d7292; letter-spacing:.6px; margin-top:4px}
+@media (max-width:520px){
+  .intro-inner{padding:18px 14px 16px; gap:8px}
+  .intro-crest{font-size:34px}
+  .intro-title{letter-spacing:2px}
+  .intro-title span{letter-spacing:5px}
+  .intro-help-grid{grid-template-columns:1fr}
+  .intro-card .portrait-icon{font-size:24px}
+  .intro-play{padding:14px 16px !important; font-size:15px !important}
+}
+@media (orientation:landscape) and (max-height:560px){
+  .intro-champs{grid-template-columns:repeat(8,1fr); gap:4px; margin:6px 0 0}
+  .intro-inner{gap:6px; padding:10px}
+  .intro-crest{font-size:24px}
+  .intro-title{font-size:30px}
+  .intro-play{width:min(260px,70vw); padding:10px 16px !important; font-size:14px !important}
+  .intro-foot{display:none}
+}

@@ -749,20 +749,16 @@ window.TFT = window.TFT || {};
     TFT.UI.init();
     TFT.UI.renderAll();
     pushLog('TFT Arena — Offline. İyi şanslar!');
-    let seen = false;
-    try { seen = !!window.localStorage.getItem('tft_seen_welcome_v1'); } catch (e) { }
-    if (!seen) {
-      TFT.UI.showWelcome(() => {
-        try { window.localStorage.setItem('tft_seen_welcome_v1', '1'); } catch (e) { }
-        beginRound();
-      });
-    } else {
+    // her açılışta giriş ekranı
+    TFT.UI.showWelcome(() => {
+      try { window.localStorage.setItem('tft_seen_welcome_v1', '1'); } catch (e) { }
       beginRound();
-    }
+    });
   }
   function restart() {
     reset();
     TFT.UI.hideModal();
+    if (TFT.UI.hideWelcome) TFT.UI.hideWelcome();
     TFT.UI.setCombatMode(false);
     TFT.UI.renderAll();
     beginRound();

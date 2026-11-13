@@ -52,9 +52,27 @@ function boot() {
   if (!G) { console.log(window.__errors); process.exit(1); }
   const S = G.S;
 
-  // ilk açılış karşılama ekranı
+  // ilk açılış: giriş ekranı
+  console.log('\n— Giriş ekranı —');
+  const intro = document.getElementById('intro-screen');
+  assert(!!intro, 'giriş ekranı var');
+  assert(intro && !intro.classList.contains('hidden'), 'giriş ekranı açılışta görünür');
+  assert(document.querySelectorAll('#intro-champs .intro-card').length === 8, 'giriş ekranında 8 şampiyon vitrini');
+  assert(document.querySelector('#intro-champs .intro-card .portrait-icon'), 'vitrin kartlarında şampiyon görseli');
+  assert((document.querySelector('.intro-title') || {}).textContent.includes('ARENA'), 'başlık yazısı var');
+  const introHelp = document.getElementById('intro-help');
+  if (introHelp) { introHelp.click(); steps(1); }
+  assert(!document.getElementById('intro-help-body').classList.contains('hidden'), 'yardım bölümü açıldı');
+  if (introHelp) { introHelp.click(); steps(1); }
+
+  // tıklama/sürükleme için kritik: birim katmanı boş hex'lere dokunuşu engellememeli
+  const css = document.querySelector('style').textContent;
+  assert(/#unit-layer\{[^}]*pointer-events:none/.test(css), 'birim katmanı dokunuşu engellemiyor (pointer-events:none)');
+  assert(/#unit-layer \.unit-token\{[^}]*pointer-events:auto/.test(css), 'jetonlar dokunuş alıyor (pointer-events:auto)');
+
   const welcome = document.getElementById('btn-welcome');
   if (welcome) { welcome.click(); steps(2); }
+  assert(intro.classList.contains('hidden'), 'OYNA ile giriş ekranı kapandı');
   assert(S.phase === 'carousel' || S.phase === 'planning', 'karşılama ekranı geçildi');
 
   console.log('\n— Başlangıç —');
