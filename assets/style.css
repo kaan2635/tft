@@ -673,6 +673,7 @@ body.is-mobile .unit-token{-webkit-user-drag:none}
 body.is-mobile #rotate-hint{display:none !important}
 
 /* --- üst bar --- */
+body.is-mobile #toast-root{bottom:calc(var(--shop-h,150px) + var(--bar-h,46px) + 12px); z-index:120}
 body.is-mobile #topbar{
   position:fixed; top:0; left:0; right:0; height:var(--top-h,70px);
   display:flex; align-items:flex-start; gap:8px;
@@ -858,7 +859,8 @@ body.is-mobile #traits-list{overscroll-behavior:contain}
 /* --- yatay (landscape) telefon: mağaza sağ sütuna geçer --- */
 @media (orientation:landscape) and (max-height:600px){
   body.is-mobile{-webkit-touch-callout:none}
-  body.is-mobile #topbar{height:42px; padding:2px 6px 0; gap:6px}
+  body.is-mobile #toast-root{bottom:calc(var(--shop-h,150px) + var(--bar-h,46px) + 12px); z-index:120}
+body.is-mobile #topbar{height:42px; padding:2px 6px 0; gap:6px}
   body.is-mobile #players-strip{display:none}
   body.is-mobile .brand-crest{width:24px; height:24px; font-size:13px; border-radius:6px}
   body.is-mobile #stage-info{min-width:44px}

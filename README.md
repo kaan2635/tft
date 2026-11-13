@@ -10,6 +10,10 @@ Tek oyunculu: **7 bot oyuncuya** karşı 8 kişilik lobide hayatta kalmaya çal�
 └──────────────────────────────────────────────────────────────┘
 ```
 
+## Giriş ekranı
+Açılışta tam ekran giriş ekranı gelir: başlık, dönen 8 şampiyon vitrini, **▶ OYNA**, **📖 NASIL OYNANIR**
+ve **🔊 SES** düğmeleri, en iyi derecen. OYNA'ya basınca ilk tur (carousel) başlar.
+
 ## Nasıl çalıştırılır
 
 **En basit:** `index.html` dosyasına çift tıkla (Chrome / Edge / Firefox).
@@ -69,6 +73,7 @@ Yatay tutunca (landscape) arayüz kendini yeniden kurar: mağaza sağ sütuna ge
 
 ## Özellikler
 
+- **Şampiyon sanatı**: 6 painterly kart arka planı (savaşçı, büyücü, nişancı, suikastçı, muhafız, efsane) şampiyonun sinerjisine/menziline göre seçilir, trait rengiyle harmanlanır ve tek dosyaya gömülüdür.
 - **53 şampiyon**, 5 maliyet kademesi, her biri için özel yetenek (tek hedef, alan, nova, zincir, infaz, atılma, emme, kalkan, iyileştirme, buff…) ve 2 sinerji.
 - **22 sinerji**: Soylu, İmparatorluk, Ninja, Boşluk, Buzul, Şeytan, Ejder, Yordle, Korsan, Vahşi, Robot, Sürgün + Suikastçı, Kılıç Ustası, Yumruk, Elementalist, Silahşör, Şövalye, Nişancı, Büyücü, Muhafız, Şekil Değiştiren.
 - **8 bileşen + 36 tamamlanmış eşya**, gerçek etkilerle (Guinsoo yığılması, Statikk zinciri, Zefir savaş dışı bırakma, Morello yakma, Bramble yansıtma, Thief's Gloves rastgele eşya, …).
@@ -85,6 +90,7 @@ index.html          ÜRETİLEN tek dosya (CSS + JS gömülü) — doğrudan aç�
 src/index.template.html  şablon (gövde iskeleti, INJECT işaretleri)
 tools/build.py      şablon + css + js dosyalarını index.html içine gömer
 assets/style.css    tüm tema + hex tahta + animasyonlar + mobil katman
+assets/art/*.png    şampiyon kart sanatı (build'de 256px JPEG data-uri olarak gömülür)
 src/data.js         şampiyonlar, sinerjiler, eşyalar, augmentlar, PvE, sabitler
 src/combat.js       DOM'suz savaş motoru (hex math, hedefleme, yetenekler, eşya etkileri)
 src/bots.js         bot kadro üretimi, güç hesabı, bot-bot sonucu, PvE dalgaları
@@ -121,8 +127,10 @@ NODE_PATH=./node_modules node tests/mobile-flow-test.js
 ### Tek dosyayı yeniden üretmek
 `src/` veya `assets/` içinde değişiklik yaptıysan:
 ```bash
-python3 tools/build.py   # -> index.html (CSS + JS gömülü, harici istek yok)
+pip install pillow       # sanat dosyalarını küçültüp gömmek için (opsiyonel)
+python3 tools/build.py   # -> index.html (CSS + JS + sanat gömülü, harici istek yok)
 ```
+Pillow yoksa build yine çalışır; sanat katmanı boş kalır (renkli gradyanlar kullanılır).
 
 Motor testi tüm 53 şampiyonu, 36 eşyayı, 22 sinerjiyi, PvE dalgalarını ve 100 rastgele savaşı kapsar. Etki testi her sinerjinin ve her eşyanın gerçekten uygulandığını doğrular.
 

@@ -1329,7 +1329,8 @@ window.TFT = window.TFT || {};
         const hexEl = e.target.closest('#board .hex');
         const bsEl = e.target.closest('.bench-slot');
         const u = G.unitByUid(S.selectedUid);
-        if (u && hexEl && !e.target.closest('.unit-token')) {
+        const tokEl = e.target.closest('.unit-token');
+        if (u && hexEl && (!tokEl || +tokEl.dataset.uid !== u.uid)) {
           G.placeUnit(u.uid, +hexEl.dataset.r, +hexEl.dataset.c);
           S.selectedUid = null; renderInfo(); updateItemHint();
           return;
