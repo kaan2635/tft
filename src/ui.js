@@ -1041,6 +1041,11 @@ window.TFT = window.TFT || {};
   let drag = null;
   let selectedItemSlot = null;
 
+  function setPlacing(on) {
+    const b = $('#board');
+    if (!b) return;
+    if (on) b.classList.add('placing'); else b.classList.remove('placing');
+  }
   function setHint(html) {
     const el = $('#item-hint');
     if (!el) return;
@@ -1056,8 +1061,10 @@ window.TFT = window.TFT || {};
     const u = (S.selectedUid && document.body.classList.contains('is-mobile')) ? G.unitByUid(S.selectedUid) : null;
     if (u && u.r < 0) {
       setHint(`👆 <b>${CH[u.champId].name}</b> — tahtada bir kareye dokun (yerleştir) · bilgi için tekrar dokun`);
+      setPlacing(true);
       return;
     }
+    setPlacing(false);
     setHint('');
   }
   function clearItemSelection() {
@@ -1250,7 +1257,7 @@ window.TFT = window.TFT || {};
           <button class="btn close" data-sheet-close="1">KAPAT</button>
         </div>
       </div>`;
-    setHint('');
+    setHint(''); setPlacing(false);
     root.classList.remove('hidden');
     root.querySelector('.sheet-bd').addEventListener('click', closeSheet);
     const sellBtn = root.querySelector('[data-sheet-sell]');
@@ -1332,12 +1339,12 @@ window.TFT = window.TFT || {};
         const tokEl = e.target.closest('.unit-token');
         if (u && hexEl && (!tokEl || +tokEl.dataset.uid !== u.uid)) {
           G.placeUnit(u.uid, +hexEl.dataset.r, +hexEl.dataset.c);
-          S.selectedUid = null; renderInfo(); updateItemHint();
+          S.selectedUid = null; renderInfo(); updateItemHint(); setPlacing(false);
           return;
         }
         if (u && bsEl && u.r >= 0) {
           G.benchUnit(u.uid, +bsEl.dataset.bench);
-          S.selectedUid = null; renderInfo(); updateItemHint();
+          S.selectedUid = null; renderInfo(); updateItemHint(); setPlacing(false);
           return;
         }
       }

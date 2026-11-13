@@ -849,6 +849,13 @@ body.is-mobile #traits-list{overscroll-behavior:contain}
 .sheet-actions .btn.sell{background:linear-gradient(180deg,#48161c,#2a0d11); border-color:#8c3340; color:#ffc0c0}
 .sheet-actions .btn.close{background:linear-gradient(180deg,#1c2c48,#131f33); border-color:#2f4463}
 
+/* --- yerleştirme modu: oyuncu sıraları nefes alır --- */
+#board.placing .hex:not(.enemy) .hex-glow{
+  box-shadow:inset 0 0 0 2px rgba(216,177,85,.55), inset 0 0 18px rgba(216,177,85,.22);
+  animation:placingPulse 1.5s ease-in-out infinite;
+}
+@keyframes placingPulse{0%,100%{opacity:.55} 50%{opacity:1}}
+
 /* --- seçili jeton --- */
 .unit-token.selected{ z-index:6; filter:brightness(1.06) }
 .unit-token.selected .unit-ring{

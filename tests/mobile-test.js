@@ -151,11 +151,13 @@ function tap(el) { pointer(el, 'pointerdown'); pointer(el, 'pointerup'); steps(2
   assert(document.getElementById('sheet-root').classList.contains('hidden'), 'yedek birimde ilk dokunuş alt sayfa açmıyor (seçim)');
   assert(!!document.querySelector(`#bench .unit-token[data-uid="${benchUnit.uid}"].selected`), 'yedek jetonu seçildi');
   assert(!document.getElementById('item-hint').classList.contains('hidden'), 'yerleştirme ipucu göründü');
+  assert(document.getElementById('board').classList.contains('placing'), 'yerleştirme modunda oyuncu kareleri vurgulandı');
   const hex = document.querySelector('#board .hex[data-r="4"][data-c="2"]');
   assert(!!hex, 'tahta karesi bulundu');
   hex.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); steps(2);
   const placed = G.unitByUid(benchUnit.uid);
   assert(placed && placed.r === 4 && placed.c === 2, 'kareye dokunmak birimi yerleştirdi');
+  assert(!document.getElementById('board').classList.contains('placing'), 'yerleştirme modu kapandı');
 
   console.log('\n— Masaüstüne dönüş —');
   window.innerWidth = 1400; window.innerHeight = 900;
